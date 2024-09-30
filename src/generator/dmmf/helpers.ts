@@ -36,6 +36,7 @@ export function parseDocumentationAttributes<TData extends object = object>(
       for (let i = 0; i < rawAttributeArgsParts.length; i += 2) {
         const key = rawAttributeArgsParts[i];
         const value = rawAttributeArgsParts[i + 1];
+        console.log(value);
         parsedAttributeArgs[key] = JSON.parse(value);
       }
     }

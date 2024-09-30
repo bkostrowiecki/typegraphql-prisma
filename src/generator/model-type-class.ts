@@ -55,6 +55,9 @@ export default function generateObjectTypeClassFromModel(
       .filter(field => field.location === "enumTypes")
       .map(field => field.type),
   );
+  // generateDecoratorsInports(
+  //   sourceFile,
+  // )
 
   const countField = modelOutputType.fields.find(it => it.name === "_count");
   const shouldEmitCountField =
@@ -64,28 +67,37 @@ export default function generateObjectTypeClassFromModel(
     generateResolversOutputsImports(sourceFile, [countField.typeGraphQLType]);
   }
 
+  const decorators = model.isOmitted.output
+    ? []
+    : [
+        {
+          name: "TypeGraphQL.ObjectType",
+          arguments: [
+            `"${model.typeName}"`,
+            Writers.object({
+              ...(dmmfDocument.options.emitIsAbstract && {
+                isAbstract: "true",
+              }),
+              ...(model.docs && { description: `"${model.docs}"` }),
+              ...(dmmfDocument.options.simpleResolvers && {
+                simpleResolvers: "true",
+              }),
+            }),
+          ],
+        },
+      ];
+
+  if (model.decorator) {
+    decorators.push({
+      name: model.decorator.name,
+      arguments: model.decorator.args ?? [],
+    });
+  }
+
   sourceFile.addClass({
     name: model.typeName,
     isExported: true,
-    decorators: model.isOmitted.output
-      ? []
-      : [
-          {
-            name: "TypeGraphQL.ObjectType",
-            arguments: [
-              `"${model.typeName}"`,
-              Writers.object({
-                ...(dmmfDocument.options.emitIsAbstract && {
-                  isAbstract: "true",
-                }),
-                ...(model.docs && { description: `"${model.docs}"` }),
-                ...(dmmfDocument.options.simpleResolvers && {
-                  simpleResolvers: "true",
-                }),
-              }),
-            ],
-          },
-        ],
+    decorators,
     properties: [
       ...model.fields.map<OptionalKind<PropertyDeclarationStructure>>(field => {
         const isOptional =

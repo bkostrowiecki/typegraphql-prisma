@@ -57,6 +57,12 @@ export function transformBareModel(model: PrismaDMMF.Model): DMMF.Model {
   const { output = false } = parseDocumentationAttributes<{
     output: boolean;
   }>(model.documentation, "omit", "model");
+  const decoratorAttributeArgs =
+    parseDocumentationAttributes<DMMF.CustomDecorator>(
+      model.documentation,
+      "decorator",
+      "model",
+    );
   return {
     ...model,
     typeName: attributeArgs.name ?? pascalCase(model.name),
@@ -64,6 +70,13 @@ export function transformBareModel(model: PrismaDMMF.Model): DMMF.Model {
     docs: cleanDocsString(model.documentation),
     plural: attributeArgs.plural,
     isOmitted: { output },
+    decorator: decoratorAttributeArgs.name
+      ? {
+          name: decoratorAttributeArgs.name,
+          args: decoratorAttributeArgs.args,
+          import: decoratorAttributeArgs.import,
+        }
+      : undefined,
   };
 }
 
@@ -120,6 +133,9 @@ function transformModelField(dmmfDocument: DmmfDocument) {
       output: boolean;
       input: boolean | InputOmitSetting[];
     }>(field.documentation, "omit", "field");
+    const decoratorFieldAttribute = parseDocumentationAttributes<{
+      value?: string;
+    }>(field.documentation, "decorator", "field");
     return {
       ...field,
       type: field.type, // TS type check limitation
@@ -128,6 +144,7 @@ function transformModelField(dmmfDocument: DmmfDocument) {
       fieldTSType,
       typeGraphQLType,
       docs: cleanDocsString(field.documentation),
+      decorator: decoratorFieldAttribute.value,
       isOmitted: {
         input:
           omitFieldAttribute.input ??

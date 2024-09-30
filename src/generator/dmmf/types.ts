@@ -31,6 +31,13 @@ export namespace DMMF {
     name: string | null;
     fields: string[];
   }
+  export interface CustomDecorator {
+    name: string;
+    import?: string;
+    args?: any[];
+    outputs?: CustomDecoratorOutputType[];
+  }
+  export type CustomDecoratorOutputType = "query" | "mutation" | "all";
   export interface Model {
     name: string;
     dbName: string | null;
@@ -45,6 +52,7 @@ export namespace DMMF {
     docs: string | undefined;
     plural: string | undefined;
     isOmitted: { output: boolean };
+    decorator?: CustomDecorator;
   }
   export type FieldKind = "scalar" | "object" | "enum" | "unsupported";
   export type FieldNamespace = "model" | "prisma";
@@ -83,6 +91,7 @@ export namespace DMMF {
     fieldTSType: string;
     docs: string | undefined;
     isOmitted: { input: boolean | InputOmitSetting[]; output: boolean };
+    decorator?: string;
   }
   export interface FieldDefault {
     name: string;
